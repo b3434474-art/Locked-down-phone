@@ -7,6 +7,8 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
+import android.content.pm.PackageManager
+import android.app.AlertDialog
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -40,10 +42,45 @@ class MainActivity : FragmentActivity() {
         })
         layout.addView(button("Start Lockdown") { startLockdown() })
         layout.addView(button("Exit Lockdown (fingerprint or phone PIN)") { authenticateAndStop() })
-        layout.addView(button("Open allowed-app settings") {
-            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
-        })
+        layout.addView(button("Choose Allowed Apps") { showAllowedAppsPicker() })
         setContentView(layout)
+    }
+
+    private fun showAllowedAppsPicker() {
+        val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        @Suppress("DEPRECATION")
+        val activities = packageManager.queryIntentActivities(launcherIntent, 0)
+            .filter { it.activityInfo.packageName != packageName }
+            .distinctBy { it.activityInfo.packageName }
+            .sortedBy { it.loadLabel(packageManager).toString().lowercase() }
+
+        if (activities.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setMessage("No launchable apps were found on this phone.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+
+        val labels = activities.map { it.loadLabel(packageManager).toString() }.toTypedArray()
+        val prefs = getSharedPreferences("cousin_lockdown", Context.MODE_PRIVATE)
+        val saved = prefs.getStringSet("allowed_apps", emptySet())?.toSet() ?: emptySet()
+        val checked = BooleanArray(activities.size) { activities[it].activityInfo.packageName in saved }
+
+        AlertDialog.Builder(this)
+            .setTitle("Choose apps for your cousin")
+            .setMultiChoiceItems(labels, checked) { _, which, isChecked ->
+                checked[which] = isChecked
+            }
+            .setPositiveButton("Save") { _, _ ->
+                val chosen = activities.indices
+                    .filter { checked[it] }
+                    .map { activities[it].activityInfo.packageName }
+                    .toSet()
+                prefs.edit().putStringSet("allowed_apps", chosen).apply()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun startLockdown() {

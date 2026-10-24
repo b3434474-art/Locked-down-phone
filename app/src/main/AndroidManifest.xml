@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <application android:allowBackup="false" android:label="Cousin Lock Down" android:theme="@style/AppTheme">
+    <application android:allowBackup="false" android:label="Cousin Lock Down" android:icon="@drawable/cousin_lock_icon" android:roundIcon="@drawable/cousin_lock_icon" android:theme="@style/AppTheme">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

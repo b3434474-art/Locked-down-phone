@@ -124,7 +124,7 @@ class MainActivity : FragmentActivity() {
         if (!kidMode) {
             page.addView(button("Choose Apps") { openAppPicker() })
             page.addView(button("Start Kid Mode") {
-                if (chosen.isEmpty()) openAppPicker() else { kidMode = true; showHome() }
+                if (chosen.isEmpty()) openAppPicker() else { kidMode = true; showHome(); enterScreenPinning() }
             })
             page.addView(button("Allow overlay permission (optional)") {
                 startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, android.net.Uri.parse("package:$packageName")))
@@ -194,7 +194,7 @@ class MainActivity : FragmentActivity() {
         setContentView(root)
     }
 
-    private fun authenticateAndExit() {
+    private fun enterScreenPinning() {\n        // This invokes Android screen pinning where available. Full multi-app kiosk\n        // mode requires device-owner provisioning and cannot be enabled by an ordinary app.\n        try { startLockTask() } catch (_: Exception) { }\n    }\n\n    private fun authenticateAndExit() {
         val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or BiometricManager.Authenticators.DEVICE_CREDENTIAL
         if (BiometricManager.from(this).canAuthenticate(authenticators) != BiometricManager.BIOMETRIC_SUCCESS) {
             // If the phone has no supported lock credential, don't silently exit kid mode.

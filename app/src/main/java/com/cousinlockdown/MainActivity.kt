@@ -1,6 +1,5 @@
 package com.cousinlockdown
 
-import android.app.Activity
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
@@ -11,18 +10,17 @@ import android.view.Gravity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import android.os.Handler
-import android.os.Looper
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     private fun button(label: String, action: () -> Unit) = Button(this).apply {
         text = label
         setOnClickListener { action() }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val layout = LinearLayout(this).apply {
@@ -47,6 +45,7 @@ class MainActivity : ComponentActivity() {
         })
         setContentView(layout)
     }
+
     private fun startLockdown() {
         val overlayAllowed = Settings.canDrawOverlays(this)
         val ops = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
@@ -59,6 +58,7 @@ class MainActivity : ComponentActivity() {
         }
         ContextCompat.startForegroundService(this, Intent(this, LockdownService::class.java).setAction("START"))
     }
+
     private fun authenticateAndStop() {
         val executor = ContextCompat.getMainExecutor(this)
         val prompt = BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
